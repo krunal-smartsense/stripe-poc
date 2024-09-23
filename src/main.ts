@@ -103,7 +103,7 @@ app.post('/webhook', express.raw({ type: 'application/json' }), async (req: Requ
 
         // Event when the payment failed due to card problems or insufficient funds (every subscription interval)  
         case 'invoice.payment_failed':
-            // console.log('Invoice payment failed!')
+            // console.log('Invoice payment failled!')
             // console.log(event.data)
             break;
 
