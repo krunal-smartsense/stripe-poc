@@ -61,7 +61,7 @@ export class StripeHelperService {
         return stripe.webhooks.constructEvent(body, sig, webhookSecret);
     }
 
-    public updateSubscription = async (subscriptionId: string, newPriceId: string) => {
+    public updateSubscription = async (subscriptionId: string, newPriceId: string, userId: number, assignedByUserId: number) => {
         const subscription = await this.getSubscription(subscriptionId);
         const result = await stripe.subscriptions.update(subscriptionId, {
             items: [
@@ -75,9 +75,11 @@ export class StripeHelperService {
             ],
             metadata: {
                 priceId: newPriceId,
-                // userId,
+                isNewProductAdded: 1,
+                userId,
+                assignedByUserId
             },
-            proration_behavior: 'none',
+            // proration_behavior: 'none',
         });
         return result;
     }

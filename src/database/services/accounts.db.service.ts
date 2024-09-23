@@ -7,4 +7,12 @@ export class AccountsDbService {
     addOrUpdateAccountEntry = async(payload: any) => {
         return Account.upsert(payload);
     }
+
+    getAccountInfo = async(subscriptionId: string) => {
+        return Account.findOne({
+            where: {
+                stripeSubscriptionId: subscriptionId
+            }
+        })
+    }
 }

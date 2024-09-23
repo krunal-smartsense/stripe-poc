@@ -30,6 +30,7 @@ export class UserController {
 
     inviteUser = async (req: Request, res: Response) => {
         const userInfo = req.user;
+        const { role = 'admin' } = req.body;
         if (!userInfo.accountUserInfo) {
             return this.commonHelperService.sendResponse(res, StatusCodes.FORBIDDEN, undefined, Messages.ERR_USER_INVITE)
         }
@@ -51,10 +52,10 @@ export class UserController {
         const result = await this.accountUserDbService.addOrUpdateAccountEntry({
             userId: createdUser.id,
             accountId: userInfo.accountUserInfo.accountId,
-            permission: 'admin',
+            permission: role,
         })
 
-        return this.commonHelperService.sendResponse(res, StatusCodes.CREATED, undefined, Messages.USER_CREATED);
+        return this.commonHelperService.sendResponse(res, StatusCodes.CREATED, result, Messages.USER_CREATED);
 
     }
 
@@ -75,8 +76,10 @@ export class UserController {
     }
 
     updateSubscription = async (req: Request, res: Response) => {
+        const userInfo = req.user;
         const { subscriptionForUserId, subscriptionId, priceId } = req.body;
-        const result = await this.stripeHelperService.updateSubscription(subscriptionId, priceId)
+        const assignedByUserId = userInfo.id;
+        const result = await this.stripeHelperService.updateSubscription(subscriptionId, priceId, subscriptionForUserId, assignedByUserId)
         return this.commonHelperService.sendResponse(res, StatusCodes.OK, undefined, Messages.SUCCESS);
     }
 }
