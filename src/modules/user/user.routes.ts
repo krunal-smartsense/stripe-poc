@@ -20,7 +20,8 @@ class UserRoute {
         this.route.post('/subscribe', this.userController.subscribeProduct);
         this.route.post('/invite-user', this.userController.inviteUser);
         this.route.get('/test-subscription', this.userController.testSubscription);
-        this.route.post('/update-subscription', this.userController.updateSubscription)
+        this.route.post('/update-subscription', this.userController.updateSubscription);
+        this.route.post('/assign-product', this.userController.assignProduct)
     }
 }
 

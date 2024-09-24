@@ -21,4 +21,9 @@ export const Messages = {
     ERR_USER_INVITE: 'You can not invite user',
     NO_SUBSCRIPTION: 'You are not subscribed',
     SUCCESS: 'Success',
+    ERR_ROLE: 'You can not perform this operation',
+    PRODUCT_NOT_FOUND: 'This product does not found',
+    NO_MORE_QUANTITY: 'No more quantity is available',
+    ERR_SUBSCRIPTION: 'Subscription is not active',
+    PRODUCT_ALREADY_ASSIGNED: 'This product is already assigned to the user.'
 }

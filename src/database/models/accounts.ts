@@ -1,81 +1,88 @@
-import { DataTypes, Model, Optional, Sequelize } from 'sequelize';
+import { Table, Column, Model, BelongsTo, HasMany, ForeignKey, DataType, Unique } from 'sequelize-typescript';
+import { User } from './user';
+import { AccountUser } from './accountUser';
+import { UserPlans } from './userPlans';
 
-interface AccountAttributes {
-    id: number;
-    name?: string;
-    userId: number;
-    stripeCustomerId?: string;
-    stripeSubscriptionId?: string;
-    plan?: string;
-    active: boolean
-}
-
-interface AccountCreationAttributes extends Optional<AccountAttributes, 'id'> { }
-
-class Account extends Model<AccountAttributes, AccountCreationAttributes> implements AccountAttributes {
-    public id!: number;
-    public userId!: number;
-    public name?: string;
-    public stripeCustomerId?: string;
-    public stripeSubscriptionId?: string;
-    public plan?: string;
-    public active!: boolean;
-
-    public readonly createdAt!: Date;
-    public readonly updatedAt!: Date;
-
-    static associate(models: any) {
-        Account.belongsTo(models.User, {as: 'user', foreignKey: 'userId'})
-        Account.hasMany(models.AccountUser, {as: 'account_user_info', foreignKey: 'accountId'})
+@Table({
+  tableName: 'account',
+  timestamps: true,
+  underscored: true,
+  paranoid: true,
+  indexes: [
+    {
+        name: 'unique_account',
+        unique: true,
+        fields: ['user_id', 'stripe_customer_id', 'stripe_subscription_id']
     }
-    
-    public static initialize(sequelize: Sequelize) {
-        Account.init(
-            {
-                id: {
-                    type: DataTypes.INTEGER,
-                    primaryKey: true,
-                    autoIncrement: true,
-                },
-                userId: {
-                    type: DataTypes.INTEGER,
-                    allowNull: false,
-                    references: {model: 'user', key: 'id'},
-                },
-                name: {
-                    type: DataTypes.STRING,
-                    allowNull: true,
-                },
-                stripeCustomerId: {
-                    type: DataTypes.STRING,
-                    allowNull: true,
-                },
-                stripeSubscriptionId: {
-                    type: DataTypes.STRING,
-                    allowNull: true,
-                },
-                plan: {
-                    type: DataTypes.STRING,
-                    allowNull: true,
-                },
-                active: {
-                    type: DataTypes.BOOLEAN,
-                    defaultValue: false,
-                },
-            },
-            {
-                sequelize,
-                modelName: 'Account',
-                tableName: 'account',
-                timestamps: true,
-                underscored: true,
-                createdAt: 'created_at',
-                updatedAt: 'updated_at',
-                paranoid: true,
-            }
-        )
-        return Account;
-    }
-}
+  ]
+})
+export class Account extends Model {
+  @Column({
+    type: DataType.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+  })
+  id!: number;
 
-export { Account }
+  @ForeignKey(() => User)
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+  })
+  userId!: number;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  name?: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  stripeCustomerId?: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  stripeSubscriptionId?: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  plan?: string;
+
+  @Column({
+    type: DataType.BOOLEAN,
+    defaultValue: false,
+  })
+  active!: boolean;
+
+  @Column({
+    type: DataType.BOOLEAN,
+    defaultValue: false,
+  })
+  isMainPlan!: boolean;
+
+  @BelongsTo(() => User)
+  user!: User;
+
+  @HasMany(() => AccountUser)
+  accountUserInfo!: AccountUser[];
+
+  @HasMany(() => UserPlans)
+  accountUserPlanInfo!: UserPlans[]; 
+
+  @Column({
+    type: DataType.DATE,
+  })
+  createdAt!: Date;
+
+  @Column({
+    type: DataType.DATE,
+  })
+  updatedAt!: Date;
+}
