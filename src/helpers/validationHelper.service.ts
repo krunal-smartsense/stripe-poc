@@ -1,8 +1,9 @@
 import { NextFunction, Request, Response } from "express";
 import { Messages } from "./messages";
+import { ObjectSchema } from "joi";
 
 export class ValidationHelper {
-    public validateBody(validator: any) {
+    public validateBody(validator: ObjectSchema<any>) {
         return async (req: Request, res: Response, next: NextFunction) => {
             const { error, value } = await validator.validate(req.body, { abortEarly: false });
             if (error) {

@@ -2,6 +2,16 @@ import { Table, Column, Model, HasOne, HasMany, DataType } from 'sequelize-types
 import { AccountUser } from './accountUser';
 import { Account } from './accounts';
 import { UserPlans } from './userPlans';
+import { Optional } from 'sequelize';
+
+interface UserAttributes {
+    id: number;
+    email: string;
+    password: string;
+    accountUserInfo?: AccountUser
+}
+
+interface UserCreationAttributes extends Optional<UserAttributes, 'id'> { }
 
 @Table({
   tableName: 'user',
@@ -9,7 +19,7 @@ import { UserPlans } from './userPlans';
   underscored: true,
   paranoid: true,
 })
-export class User extends Model {
+export class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes  {
   @Column({
     type: DataType.INTEGER,
     primaryKey: true,

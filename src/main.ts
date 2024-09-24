@@ -71,11 +71,6 @@ app.post('/webhook', express.raw({ type: 'application/json' }), async (req: Requ
                 permission: 'owner',
             }
             await accountUserDbService.addOrUpdateAccountEntry(accountUser); 
-            const userSubProducts = {
-                userId: subscriptionData.object?.metadata?.userId,
-                priceId: subscriptionData.object?.metadata?.priceId,
-            }
-            // await userSubscribeProductDbService.addOrUpdateUserProductSubscribe(userSubProducts);
             break;
         }
 
@@ -116,15 +111,15 @@ app.post('/webhook', express.raw({ type: 'application/json' }), async (req: Requ
             if (subscriptionData.object.metadata.isNewProductAdded) {
                 const accountInfo = await accountsDbService.getAccountInfo(subscriptionData.object.id)
                 if (accountInfo) {
-                    const planInfo = {
-                        userId: subscriptionData.object?.metadata?.userId,
-                        assignedByUserId: subscriptionData.object.metadata.assignedByUserId,
-                        priceId: subscriptionData.object?.metadata?.priceId,
-                        accountId: accountInfo.id,
-                        planToBeRenewAt: dayjs.unix(subscriptionData.object.current_period_end).tz('utc').format("YYYY-MM-DD HH:mm:ss Z"),
-                    }
-                    console.log("🚀 ~ app.post ~ planInfo:", planInfo)
-                    await userPlansDbService.addOrUpdateUserProductSubscribe(planInfo);
+                    // const planInfo = {
+                    //     userId: subscriptionData.object?.metadata?.userId,
+                    //     assignedByUserId: subscriptionData.object.metadata.assignedByUserId,
+                    //     priceId: subscriptionData.object?.metadata?.priceId,
+                    //     accountId: accountInfo.id,
+                    //     planToBeRenewAt: dayjs.unix(subscriptionData.object.current_period_end).tz('utc').format("YYYY-MM-DD HH:mm:ss Z"),
+                    // }
+                    // console.log("🚀 ~ app.post ~ planInfo:", planInfo)
+                    // await userPlansDbService.addOrUpdateUserProductSubscribe(planInfo);
                 }
 
             }

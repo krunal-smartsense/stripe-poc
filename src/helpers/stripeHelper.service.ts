@@ -61,25 +61,44 @@ export class StripeHelperService {
         return stripe.webhooks.constructEvent(body, sig, webhookSecret);
     }
 
-    public updateSubscription = async (subscriptionId: string, newPriceId: string, userId: number, assignedByUserId: number) => {
+    public updateSubscription = async (subscriptionId: string, newPriceId: string, quantity: number, userId: number) => {
         const subscription = await this.getSubscription(subscriptionId);
+
+        // Find if the item with the new price already exists
+        const existingItem = subscription.items.data.find(item => item.price.id === newPriceId);
+
+        let updatedItems;
+        if (existingItem) {
+            // If the item exists, update its quantity
+            updatedItems = subscription.items.data.map(item => {
+                if (item.plan.id === existingItem.plan.id) {
+                    console.log('inside----', item.id);
+
+                    return {
+                        id: item.id,
+                        quantity: quantity || 1, // Increase quantity by 1
+                    };
+                }
+                return { id: item.id };
+            });
+        } else {
+            // If the item doesn't exist, add it as a new item
+            updatedItems = [
+                ...subscription.items.data.map(item => ({ id: item.id })),
+                { price: newPriceId, quantity: 1 },
+            ];
+        }
+
+        // Update the subscription
         const result = await stripe.subscriptions.update(subscriptionId, {
-            items: [
-                ...subscription.items.data.map(item => ({
-                    id: item.id,
-                })),
-                {
-                    price: newPriceId,
-                    quantity: 1,                    
-                },
-            ],
+            items: updatedItems,
             metadata: {
                 priceId: newPriceId,
-                isNewProductAdded: 1,
+                isQuantityUpdated: existingItem ? 1 : 0,
+                isNewProductAdded: existingItem ? 0 : 1,
                 userId,
-                assignedByUserId
             },
-            // proration_behavior: 'none',
+            // proration_behavior: 'none', // Uncomment if you don't want to prorate
         });
         return result;
     }

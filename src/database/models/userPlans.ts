@@ -37,24 +37,18 @@ class UserPlans extends Model {
     @ForeignKey(() => Account)
     @Column({
         type: DataType.INTEGER,
-        allowNull: true,
+        allowNull: false,
     })
-    accoutntId?: string;
+    accountId?: string;
 
     @Column({
         type: DataType.STRING,
-        allowNull: true,
+        allowNull: false,
     })
     priceId?: string;
 
     @BelongsTo(() => Account)
     accountPlanInfo?: Account;
-
-    @Column({
-        type: DataType.DATE,
-        allowNull: true,
-    })
-    planToBeRenewAt?: Date;
 
     @Column({
         type: DataType.DATE,
