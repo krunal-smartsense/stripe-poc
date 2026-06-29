@@ -20,3 +20,8 @@ export class ConflictError extends AppError {
     super(message, 409);
   }
 }
+
+// Type guard — lets catch (e: unknown) blocks access AppError properties safely
+export function isAppError(e: unknown): e is AppError {
+  return e instanceof AppError;
+}

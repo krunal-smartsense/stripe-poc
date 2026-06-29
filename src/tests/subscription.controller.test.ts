@@ -6,7 +6,7 @@ jest.mock('../services/subscription.service');
 
 import { SubscriptionService } from '../services/subscription.service';
 import { SubscriptionController, createSubscriptionValidate } from '../controllers/subscription.controller';
-import { NotFoundError, ConflictError } from '../errors/app.error';
+import { NotFoundError, ConflictError, isAppError } from '../errors/app.error';
 
 const MockedService = SubscriptionService as jest.MockedClass<typeof SubscriptionService>;
 
@@ -17,7 +17,7 @@ const mockServiceInstance = {
 };
 
 function buildApp() {
-  (MockedService.getInstance as jest.Mock).mockReturnValue(mockServiceInstance as any);
+  (MockedService.getInstance as jest.Mock).mockReturnValue(mockServiceInstance);
 
   const app = express();
   app.use(express.json());
@@ -28,9 +28,10 @@ function buildApp() {
   app.patch('/subscriptions/:id/cancel', controller.cancel);
 
   // Mirrors the global error handler that would be registered in main.ts
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR;
-    res.status(status).json({ success: false, code: status, message: err.message });
+  app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
+    const status = isAppError(err) ? err.statusCode : StatusCodes.INTERNAL_SERVER_ERROR;
+    const message = err instanceof Error ? err.message : 'Internal server error';
+    res.status(status).json({ success: false, code: status, message });
   });
 
   return app;

@@ -29,7 +29,7 @@ describe('SubscriptionService', () => {
   let service: SubscriptionService;
 
   beforeEach(() => {
-    (MockRepository.getInstance as jest.Mock).mockReturnValue(mockRepoInstance as any);
+    (MockRepository.getInstance as jest.Mock).mockReturnValue(mockRepoInstance);
     service = new SubscriptionService();
   });
 
@@ -135,7 +135,7 @@ describe('SubscriptionService', () => {
       const result = await service.cancelSubscription(1);
 
       expect(mockStripeCancel).toHaveBeenCalledWith('sub_abc');
-      expect(mockRepoInstance.updateStatus).toHaveBeenCalledWith(1, 'cancelled');
+      expect(mockRepoInstance.updateStatus).toHaveBeenCalledWith('1', { status: 'cancelled' });
       expect(result).toEqual(cancelledSub);
     });
 

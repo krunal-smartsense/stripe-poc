@@ -1,5 +1,7 @@
-import { Account } from "../models/accounts"
 import { AccountUser } from "../models/accountUser";
+
+// Required fields to create an account-user join record
+export type AddAccountUserDto = Pick<AccountUser, 'accountId' | 'userId' | 'permission' | 'onboarded'>;
 
 export class AccountUserDbService {
     static instance: AccountUserDbService;
@@ -10,7 +12,8 @@ export class AccountUserDbService {
         }
         return AccountUserDbService.instance;
     }
-    addOrUpdateAccountEntry = async(payload: any) => {
+
+    addOrUpdateAccountEntry = async (payload: AddAccountUserDto) => {
         return AccountUser.create(payload)
     }
 }
