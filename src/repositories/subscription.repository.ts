@@ -1,33 +1,29 @@
-import { Subscription, SubscriptionStatus } from '../models/subscription.model';
+import { WhereOptions, Attributes } from 'sequelize';
+import { BaseRepository } from './base.repository';
+import { Subscription, SubscriptionAttributes } from '../models/subscription.model';
 
-interface CreateSubscriptionPayload {
-  userId: number;
-  stripeSubscriptionId: string;
-  status: SubscriptionStatus;
-  planId: string;
-  currentPeriodStart: Date;
-  currentPeriodEnd: Date;
-}
+export class SubscriptionRepository extends BaseRepository<Subscription> {
+  private static instance: SubscriptionRepository;
 
-export class SubscriptionRepository {
-  static instance: SubscriptionRepository;
+  constructor() {
+    super(Subscription);
+  }
 
-  static getInstance() {
+  static getInstance(): SubscriptionRepository {
     if (!SubscriptionRepository.instance) {
       SubscriptionRepository.instance = new SubscriptionRepository();
     }
     return SubscriptionRepository.instance;
   }
 
-  findById = async (id: number) => {
-    return Subscription.findByPk(id);
-  };
-
-  create = async (payload: CreateSubscriptionPayload) => {
-    return Subscription.create(payload);
-  };
-
-  updateStatus = async (id: number, status: SubscriptionStatus) => {
-    return Subscription.update({ status }, { where: { id } });
-  };
+  // Accept status and/or currentPeriodEnd so a single method serves both cancel and renewal flows
+  updateStatus(
+    id: string,
+    data: Partial<Pick<SubscriptionAttributes, 'status' | 'currentPeriodEnd'>>,
+  ): Promise<[number]> {
+    return this.model.update(
+      data,
+      { where: { id } as WhereOptions<Attributes<Subscription>> },
+    );
+  }
 }

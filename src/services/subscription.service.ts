@@ -44,7 +44,7 @@ export class SubscriptionService {
   };
 
   getSubscriptionById = async (id: number) => {
-    const subscription = await this.subscriptionRepository.findById(id);
+    const subscription = await this.subscriptionRepository.findById(String(id));
     if (!subscription) {
       throw new NotFoundError('Subscription not found');
     }
@@ -52,7 +52,8 @@ export class SubscriptionService {
   };
 
   cancelSubscription = async (id: number) => {
-    const subscription = await this.subscriptionRepository.findById(id);
+    const sid = String(id);
+    const subscription = await this.subscriptionRepository.findById(sid);
     if (!subscription) {
       throw new NotFoundError('Subscription not found');
     }
@@ -61,7 +62,7 @@ export class SubscriptionService {
     }
 
     await stripe.subscriptions.cancel(subscription.stripeSubscriptionId);
-    await this.subscriptionRepository.updateStatus(id, 'cancelled');
-    return this.subscriptionRepository.findById(id);
+    await this.subscriptionRepository.updateStatus(sid, { status: 'cancelled' });
+    return this.subscriptionRepository.findById(sid);
   };
 }

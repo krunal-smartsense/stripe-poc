@@ -1,5 +1,8 @@
+import { User } from '../src/database/models/user';
+
 declare namespace Express {
     interface Request {
-        user: any
+        // Populated by AuthMiddleware after JWT verification
+        user: User;
     }
 }

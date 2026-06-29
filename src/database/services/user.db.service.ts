@@ -2,6 +2,9 @@ import { Account } from "../models/accounts";
 import { AccountUser } from "../models/accountUser";
 import { User } from "../models/user";
 
+// Only email and password are required; id is assigned by the DB on insert
+export type UpsertUserDto = Pick<User, 'email' | 'password'> & Partial<Pick<User, 'id'>>;
+
 export class UserDbService {
     static instance: UserDbService;
 
@@ -11,7 +14,8 @@ export class UserDbService {
         }
         return UserDbService.instance;
     }
-    addOrUpdateUser = async (payload: any) => {
+
+    addOrUpdateUser = async (payload: UpsertUserDto) => {
         return User.upsert(payload)
     }
 
@@ -30,7 +34,6 @@ export class UserDbService {
                         }
                     ]
                 },
-               
             ]
         })
     }

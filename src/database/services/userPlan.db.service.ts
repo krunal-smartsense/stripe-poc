@@ -1,5 +1,11 @@
 import { UserPlans } from "../models/userPlans";
 
+// Fields needed to create or look up a user-plan assignment
+export type UserPlanDto = Pick<UserPlans, 'userId' | 'assignedByUserId'> & {
+    accountId: number;
+    priceId: string;
+};
+
 export class UserPlansDbService {
     static instance: UserPlansDbService;
 
@@ -9,7 +15,8 @@ export class UserPlansDbService {
         }
         return UserPlansDbService.instance;
     }
-    addOrUpdateUserProductSubscribe = async (payload: any) => {
+
+    addOrUpdateUserProductSubscribe = async (payload: UserPlanDto) => {
         const existingSubscription = await UserPlans.findOne({
             where: {
                 priceId: payload.priceId,
@@ -18,10 +25,9 @@ export class UserPlansDbService {
         });
 
         if (!existingSubscription) {
-            // Create a new entry if it doesn't exist
             return UserPlans.create(payload);
         }
-        return existingSubscription; // or return existingSubscription if you want to return it
+        return existingSubscription;
     };
 
     getAllotedQuantityCount(accountId: number, priceId: string) {
@@ -43,8 +49,8 @@ export class UserPlansDbService {
         })
     }
 
-    assignProduct(payload: any) {
+    // Assign a product directly without a dedup check
+    assignProduct(payload: UserPlanDto) {
         return UserPlans.create(payload)
     }
-
 }

@@ -4,7 +4,7 @@ import { User } from '../database/models/user';
 
 export type SubscriptionStatus = 'active' | 'past_due' | 'cancelled' | 'trialing';
 
-interface SubscriptionAttributes {
+export interface SubscriptionAttributes {
   id: number;
   userId: number;
   stripeSubscriptionId: string;
