@@ -86,6 +86,23 @@ export class UserController {
         return this.commonHelperService.sendResponse(res, StatusCodes.OK, undefined, Messages.SUCCESS);
     }
 
+    createTrialSubscription = async (req: Request, res: Response) => {
+        try {
+            const { priceId, trialDays } = req.body;
+            const userInfo = req.user;
+
+            const existingUser = await this.userDbService.getUserWithSubscription(userInfo.id);
+            if (existingUser?.accountUserInfo?.accountInfo) {
+                return this.commonHelperService.sendResponse(res, StatusCodes.CONFLICT, undefined, Messages.TRIAL_ALREADY_USED);
+            }
+
+            const sessionUrl = await this.stripeHelperService.createTrialSession(userInfo, priceId, trialDays);
+            return this.commonHelperService.sendResponse(res, StatusCodes.OK, { session: sessionUrl });
+        } catch (error) {
+            return this.commonHelperService.sendResponse(res, StatusCodes.INTERNAL_SERVER_ERROR, undefined, Messages.SOMETHING_WENT_WRONG);
+        }
+    }
+
     assignProduct = async(req: Request, res: Response) => {
         try {
             const { id: currentUserId, accountUserInfo } = req.user;

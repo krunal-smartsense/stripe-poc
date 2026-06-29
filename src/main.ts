@@ -90,40 +90,55 @@ app.post('/webhook', express.raw({ type: 'application/json' }), async (req: Requ
             // console.log(JSON.stringify(event.data))
             break;
 
-        // Event when the payment is successfull (every subscription interval)  
-        case 'invoice.paid':
-            // console.log('Invoice paid')
-            // console.log(JSON.stringify(event.data))
-            break;
-
-        // Event when the payment failed due to card problems or insufficient funds (every subscription interval)  
-        case 'invoice.payment_failed':
-            // console.log('Invoice payment failled!')
-            // console.log(event.data)
-            break;
-
-        // Event when subscription is updated  
-        case 'customer.subscription.updated': {
-            // console.log('============Subscription updated!==============')
-            // console.log(JSON.stringify(event.data))
-            const subscriptionData: Stripe.CustomerSubscriptionUpdatedEvent.Data = event.data;
-            console.log("🚀 ~ app.post ~ subscriptionData.object.metadata:", subscriptionData.object.metadata)
-            if (subscriptionData.object.metadata.isNewProductAdded) {
-                const accountInfo = await accountsDbService.getAccountInfo(subscriptionData.object.id)
-                if (accountInfo) {
-                    // const planInfo = {
-                    //     userId: subscriptionData.object?.metadata?.userId,
-                    //     assignedByUserId: subscriptionData.object.metadata.assignedByUserId,
-                    //     priceId: subscriptionData.object?.metadata?.priceId,
-                    //     accountId: accountInfo.id,
-                    //     planToBeRenewAt: dayjs.unix(subscriptionData.object.current_period_end).tz('utc').format("YYYY-MM-DD HH:mm:ss Z"),
-                    // }
-                    // console.log("🚀 ~ app.post ~ planInfo:", planInfo)
-                    // await userPlansDbService.addOrUpdateUserProductSubscribe(planInfo);
-                }
-
+        // Reactivate account when a payment succeeds (covers reinstatement after failed payment)
+        case 'invoice.paid': {
+            const invoiceData: Stripe.InvoicePaidEvent.Data = event.data;
+            const subscriptionId = invoiceData.object.subscription as string;
+            if (subscriptionId) {
+                await accountsDbService.setAccountActive(subscriptionId, true);
             }
-            break
+            break;
+        }
+
+        // Suspend account access when payment fails
+        case 'invoice.payment_failed': {
+            const invoiceData: Stripe.InvoicePaymentFailedEvent.Data = event.data;
+            const subscriptionId = invoiceData.object.subscription as string;
+            if (subscriptionId) {
+                await accountsDbService.setAccountActive(subscriptionId, false);
+            }
+            break;
+        }
+
+        // Handle plan upgrades, downgrades, and quantity changes
+        case 'customer.subscription.updated': {
+            const subscriptionData: Stripe.CustomerSubscriptionUpdatedEvent.Data = event.data;
+            const subscription = subscriptionData.object;
+            const accountInfo = await accountsDbService.getAccountInfo(subscription.id);
+
+            if (!accountInfo) break;
+
+            // Keep Account.plan in sync with the first subscription item's price
+            const primaryPriceId = subscription.items.data[0]?.price?.id;
+            if (primaryPriceId) {
+                await accountsDbService.updateAccountPlan(subscription.id, primaryPriceId);
+            }
+
+            // Revoke excess seats for any item whose quantity was reduced
+            for (const item of subscription.items.data) {
+                const currentQuantity = item.quantity ?? 0;
+                await userPlansDbService.revokeExcessSeats(accountInfo.id, item.price.id, currentQuantity);
+            }
+
+            break;
+        }
+
+        // Deactivate account when subscription is cancelled
+        case 'customer.subscription.deleted': {
+            const subscriptionData: Stripe.CustomerSubscriptionDeletedEvent.Data = event.data;
+            const subscriptionId = subscriptionData.object.id;
+            await accountsDbService.setAccountActive(subscriptionId, false);
+            break;
         }
 
         default:

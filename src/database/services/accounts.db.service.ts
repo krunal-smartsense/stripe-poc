@@ -15,4 +15,12 @@ export class AccountsDbService {
             }
         })
     }
+
+    setAccountActive = async (subscriptionId: string, active: boolean) => {
+        return Account.update({ active }, { where: { stripeSubscriptionId: subscriptionId } });
+    }
+
+    updateAccountPlan = async (subscriptionId: string, plan: string) => {
+        return Account.update({ plan }, { where: { stripeSubscriptionId: subscriptionId } });
+    }
 }

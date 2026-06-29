@@ -61,6 +61,21 @@ export class StripeHelperService {
         return stripe.webhooks.constructEvent(body, sig, webhookSecret);
     }
 
+    public createTrialSession = async (userInfo: any, priceId: string, trialDays: number) => {
+        const session = await stripe.checkout.sessions.create({
+            mode: 'subscription',
+            line_items: [{ price: priceId, quantity: 1 }],
+            customer_email: userInfo.email,
+            success_url: `${process.env.BASE_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
+            metadata: { userId: userInfo.id, priceId },
+            subscription_data: {
+                trial_period_days: trialDays,
+                metadata: { userId: userInfo.id, priceId },
+            },
+        });
+        return session.url;
+    }
+
     public updateSubscription = async (subscriptionId: string, newPriceId: string, quantity: number, userId: number) => {
         const subscription = await this.getSubscription(subscriptionId);
 

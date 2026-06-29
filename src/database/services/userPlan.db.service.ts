@@ -47,4 +47,13 @@ export class UserPlansDbService {
         return UserPlans.create(payload)
     }
 
+    revokeExcessSeats = async (accountId: number, priceId: string, keepCount: number) => {
+        const plans = await UserPlans.findAll({
+            where: { accountId, priceId },
+            order: [['createdAt', 'ASC']],
+        });
+        const toRevoke = plans.slice(keepCount);
+        await Promise.all(toRevoke.map(plan => plan.destroy()));
+        return toRevoke.length;
+    }
 }

@@ -1,7 +1,7 @@
 import express from 'express';
 import { UserController } from './user.controller';
 import { ValidationHelper } from '../../helpers/validationHelper.service';
-// import {  } from './user.validator';
+import { validateTrialSubscription } from './user.validator';
 // import { AuthMiddleware } from '../../middlewares/auth.middleware';
 
 const route = express();
@@ -22,6 +22,7 @@ class UserRoute {
         this.route.get('/test-subscription', this.userController.testSubscription);
         this.route.post('/update-subscription', this.userController.updateSubscription);
         this.route.post('/assign-product', this.userController.assignProduct)
+        this.route.post('/trial-subscription', this.validator.validateBody(validateTrialSubscription), this.userController.createTrialSubscription)
     }
 }
 

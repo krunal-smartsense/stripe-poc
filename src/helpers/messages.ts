@@ -25,5 +25,6 @@ export const Messages = {
     PRODUCT_NOT_FOUND: 'This product does not found',
     NO_MORE_QUANTITY: 'No more quantity is available',
     ERR_SUBSCRIPTION: 'Subscription is not active',
-    PRODUCT_ALREADY_ASSIGNED: 'This product is already assigned to the user.'
+    PRODUCT_ALREADY_ASSIGNED: 'This product is already assigned to the user.',
+    TRIAL_ALREADY_USED: 'Trial has already been used for this account.',
 }
